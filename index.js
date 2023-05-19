@@ -25,6 +25,19 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
 
+        const toysCollection = client.db("actionToys").collection("products");
+        const galleryCollection = client.db("toyGallery").collection("items");
+
+        // Gallery images
+        app.get('/images', async(req, res) => {
+            const result = await galleryCollection.find().toArray();
+            res.send(result);
+        })
+
+        app.get('/products', async(req, res) => {
+            const result = await toysCollection.find().toArray();
+            res.send(result);
+        })
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
