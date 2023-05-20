@@ -68,10 +68,10 @@ async function run() {
             res.send(result);
         })
 
-        // app.get('/myToys/:email', async(req, res) => {
-        //     const result = await toysCollection.find({sellerEmail: req.params.email}).toArray();
-        //     res.send(result)
-        // })
+        app.get('/myToys/:email', async(req, res) => {
+            const result = await toysCollection.find({sellerEmail: req.params.email}).toArray();
+            res.send(result)
+        })
 
         // app.get('/allToys', async(req, res) => {
         //     const result = await toysCollection.find().toArray();
