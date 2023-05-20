@@ -1,6 +1,6 @@
 const express = require('express')
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express()
 const port = process.env.PORT || 3000;
@@ -29,14 +29,36 @@ async function run() {
         const galleryCollection = client.db("toyGallery").collection("items");
 
         // Gallery images
-        app.get('/images', async(req, res) => {
+        app.get('/images', async (req, res) => {
             const result = await galleryCollection.find().toArray();
             res.send(result);
         })
 
-        app.get('/products', async(req, res) => {
+        // Toy section
+        app.get('/products', async (req, res) => {
             const result = await toysCollection.find().toArray();
             res.send(result);
+        })
+
+        app.get('/products/:text', async (req, res) => {
+            console.log(req.params.text);
+            const options = {
+                // Include only the `title` and `imdb` fields in each returned document
+                projection: { image: 1, name: 1, price: 1, rating: 1 },
+            };
+            if (req.params.text == "Marvel" || req.params.text == "Avengers" || req.params.text == "Starwars") {
+                const result = await toysCollection.find({ subCategory: req.params.text }, options).toArray();
+                return res.send(result)
+            }
+            const result = await toysCollection.find().toArray();
+            res.send(result)
+        })
+
+        app.get('/product/:id', async(req, res) => {
+            const id = req.params.id; 
+            const query = {_id: new ObjectId(id)}
+            const result = await toysCollection.findOne(query)
+            res.send(result)
         })
 
         // Send a ping to confirm a successful connection
