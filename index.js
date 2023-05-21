@@ -28,6 +28,11 @@ async function run() {
         const toysCollection = client.db("actionToys").collection("products");
         const galleryCollection = client.db("toyGallery").collection("items");
 
+        const indexKeys = { name: 1 }; // Replace field1 and field2 with your actual field names
+        const indexOptions = { name: "titleCategory" }; // Replace index_name with the desired index name
+        const result = await toysCollection.createIndex(indexKeys, indexOptions);
+        console.log(result)
+
         // Gallery images
         app.get('/images', async (req, res) => {
             const result = await galleryCollection.find().toArray();
@@ -68,15 +73,51 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/myToys/:email', async(req, res) => {
-            const result = await toysCollection.find({sellerEmail: req.params.email}).toArray();
+        app.get('/myToys/:email', async (req, res) => {
+            const result = await toysCollection.find({ sellerEmail: req.params.email }).toArray();
             res.send(result)
         })
 
-        app.get('/allToys', async(req, res) => {
+        app.get('/allToys', async (req, res) => {
             const result = await toysCollection.find().toArray();
             res.send(result);
         })
+
+        app.get('/toySearch/:text', async (req, res) => {
+            const searchText = req.params.text;
+
+            const result = await toysCollection.find({
+                $or: [
+                    { name: { $regex: searchText, $options: "i" } }
+                ]
+            }).toArray();
+            res.send(result)
+        })
+
+        // Update toys
+
+        app.put('/updateToys/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: new ObjectId(id) }
+            const options = { upsert: true }
+            const updateToys = req.body
+            const toys = {
+                $set: {
+                    image: updateToys.image,
+                    name: updateToys.name,
+                    quantity: updateToys.quantity,
+                    sellerName: updateToys.sellerName,
+                    sellerEmail: updateToys.sellerEmail,
+                    subCategory: updateToys.subCategory,
+                    details: updateToys.details,
+                    price: updateToys.price,
+                },
+            }
+            const result = await toysCollection.updateOne(filter, toys, options)
+            res.send(result)
+        })
+
+        
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
