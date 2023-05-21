@@ -28,10 +28,10 @@ async function run() {
         const toysCollection = client.db("actionToys").collection("products");
         const galleryCollection = client.db("toyGallery").collection("items");
 
-        const indexKeys = { name: 1 }; // Replace field1 and field2 with your actual field names
-        const indexOptions = { name: "titleCategory" }; // Replace index_name with the desired index name
-        const result = await toysCollection.createIndex(indexKeys, indexOptions);
-        console.log(result)
+        // const indexKeys = { name: 1 }; // Replace field1 and field2 with your actual field names
+        // const indexOptions = { name: "titleCategory" }; // Replace index_name with the desired index name
+        // const result = await toysCollection.createIndex(indexKeys, indexOptions);
+        // console.log(result)
 
         // Gallery images
         app.get('/images', async (req, res) => {
@@ -48,7 +48,6 @@ async function run() {
         app.get('/products/:text', async (req, res) => {
             console.log(req.params.text);
             const options = {
-                // Include only the `title` and `imdb` fields in each returned document
                 projection: { image: 1, name: 1, price: 1, rating: 1 },
             };
             if (req.params.text == "Marvel" || req.params.text == "Avengers" || req.params.text == "Starwars") {
@@ -126,8 +125,18 @@ async function run() {
             res.send(result);
         })
 
+        // Top rated product
+
+        app.get('/topRated', async(req, res) => {
+            const options = {
+                projection: { name: 1, price: 1, rating: 1 },
+            };
+            const result = await toysCollection.find({},options).sort({rating: -1}).toArray();
+            res.send(result)
+        })
+
         // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
+        // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
